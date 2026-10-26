@@ -2,7 +2,37 @@
 <html lang="zh-CN">
 <head>
 <meta charset="utf-8">
-<title>RESTORE_IN_PROGRESS</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>梦呓</title>
 </head>
-<body>Restoring... Please wait and refresh.</body>
+<body style="background:#0b1b1c;color:#efe7d6;font-family:sans-serif;padding:2rem">
+<p>正在加载…</p>
+<script>
+(async function(){
+  var urls = [
+    'https://cdn.jsdelivr.net/gh/RanceLL/dream-murmurs@e86951a69a8128da105ec4b18b8820fa7de63abe/index.html',
+    'https://raw.githubusercontent.com/RanceLL/dream-murmurs/e86951a69a8128da105ec4b18b8820fa7de63abe/index.html'
+  ];
+  var html = null;
+  for (var i = 0; i < urls.length; i++) {
+    try {
+      var r = await fetch(urls[i]);
+      if (r.ok) { html = await r.text(); break; }
+    } catch (e) {}
+  }
+  if (!html) {
+    document.body.innerHTML = '<p>加载失败。请到 GitHub 把 index.html 恢复到 commit e86951a，或重新上传完整 index.html。</p>';
+    return;
+  }
+  var marker = "if (typeof module !== 'undefined') module.exports = DreamCards;";
+  var loader = "\n/* load static card overlay after DreamCards */\n(function(){\n  function go(src){\n    var s=document.createElement('script');\n    s.src=src;\n    s.onload=function(){ try{ console.log('[static cards]', DreamCards.STATIC_COUNT); }catch(e){} };\n    document.head.appendChild(s);\n  }\n  go('https://cdn.jsdelivr.net/gh/RanceLL/dream-murmurs@main/assets/static-overlay.js');\n  setTimeout(function(){ if(!DreamCards.STATIC_COUNT) go('assets/static-overlay.js'); }, 2000);\n})();\n";
+  if (html.indexOf(marker) >= 0 && html.indexOf('static-overlay') < 0) {
+    html = html.replace(marker, marker + loader);
+  }
+  document.open();
+  document.write(html);
+  document.close();
+})();
+</script>
+</body>
 </html>
