@@ -1,0 +1,52 @@
+# 往 pictures/ 上传图片后，自动整理成牌面（cards/），再把网站同步到 gh-pages
+name: 整理牌面
+
+on:
+  push:
+    branches: [main]
+    paths: ['pictures/**', 'tools/build_cards.py']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: cards
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install pillow
+      - name: 生成小图、大图、缩略拼图和清单
+        run: |
+          set -o pipefail
+          python tools/build_cards.py | tee build-log.txt
+          { echo '### 整理牌面'; echo '```'; cat build-log.txt; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
+      - name: 提交到 main
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898283+github-actions[bot]@users.noreply.github.com"
+          git add -A cards
+          if git diff --cached --quiet; then
+            echo "牌面没有变化"
+          else
+            git commit -m "整理牌面（$(grep -m1 '^牌面' build-log.txt | cut -d'：' -f1)）"
+            git pull --rebase origin main
+            git push origin HEAD:main
+          fi
+      - name: 同步到 gh-pages
+        run: |
+          git fetch origin gh-pages || exit 0
+          TREE=$(git rev-parse HEAD^{tree})
+          if [ "$(git rev-parse origin/gh-pages^{tree})" != "$TREE" ]; then
+            C=$(git commit-tree "$TREE" -p origin/gh-pages -m "同步网站（main $(git rev-parse --short HEAD)）")
+            git push origin "$C:refs/heads/gh-pages"
+          fi
