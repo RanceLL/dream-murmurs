@@ -79,14 +79,15 @@ def main():
     files = sorted(p for p in SRC.rglob('*') if p.is_file() and p.suffix.lower() in EXTS)
     if not files:
         print('pictures/ 里没有图片'); return 1
-    old = {}
+    old, old_man = {}, None
     man_path = OUT / 'manifest.json'
     if man_path.exists():
         try:
-            for i, c in enumerate(json.loads(man_path.read_text())['cards']):
+            old_man = json.loads(man_path.read_text())
+            for i, c in enumerate(old_man['cards']):
                 old[c['sha']] = i
         except Exception:
-            old = {}
+            old, old_man = {}, None
     items, bad = [], []
     for p in files:
         data = p.read_bytes()
@@ -135,18 +136,25 @@ def main():
         for f in (OUT / d).glob('*.webp'):
             if f.name not in used[d]:
                 f.unlink(); removed += 1
-    # 缩略拼图
+    # 缩略拼图：牌没变就沿用上次的，免得换个 Pillow 版本就多出一次提交
     rows = (len(cards) + MINI_COLS - 1) // MINI_COLS
-    atlas = Image.new('RGB', (MINI_COLS * MINI[0], rows * MINI[1]), (23, 58, 58))
-    by_key = {it['sha']: it for it in keep}
-    for i, c in enumerate(cards):
-        atlas.paste(to_card(by_key[c['sha']]['im'], MINI), ((i % MINI_COLS) * MINI[0], (i // MINI_COLS) * MINI[1]))
-    mini_bytes = webp(atlas, 50)
-    mini_name = f"mini-{hashlib.sha1(mini_bytes).hexdigest()[:10]}.webp"
+    om = (old_man or {}).get('mini') or {}
+    same = old_man and [c['k'] for c in old_man['cards']] == [c['k'] for c in cards] and om.get('w') == MINI[0] and om.get('cols') == MINI_COLS
+    if same and (OUT / om['file']).exists():
+        mini_name = om['file']
+        mini_bytes = (OUT / mini_name).read_bytes()
+    else:
+        atlas = Image.new('RGB', (MINI_COLS * MINI[0], rows * MINI[1]), (23, 58, 58))
+        by_key = {it['sha']: it for it in keep}
+        for i, c in enumerate(cards):
+            atlas.paste(to_card(by_key[c['sha']]['im'], MINI), ((i % MINI_COLS) * MINI[0], (i // MINI_COLS) * MINI[1]))
+        mini_bytes = webp(atlas, 50)
+        mini_name = f"mini-{hashlib.sha1(mini_bytes).hexdigest()[:10]}.webp"
     for f in OUT.glob('mini-*.webp'):
         if f.name != mini_name:
             f.unlink()
-    (OUT / mini_name).write_bytes(mini_bytes)
+    if not (OUT / mini_name).exists():
+        (OUT / mini_name).write_bytes(mini_bytes)
     manifest = {
         'v': 1, 'n': len(cards), 'small': list(SMALL), 'large': [LARGE_MAX, LARGE_MAX * 3 // 2],
         'mini': {'file': mini_name, 'cols': MINI_COLS, 'rows': rows, 'w': MINI[0], 'h': MINI[1]},
