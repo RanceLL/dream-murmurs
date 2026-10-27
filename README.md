@@ -46,7 +46,7 @@
 | `pictures/` | 上传的原图，随便放 |
 | `cards/` | 自动生成，不要手动改：`s/` 小图、`l/` 大图、`mini-*.webp` 缩略拼图、`manifest.json` 牌的顺序 |
 | `tools/build_cards.py` | 整理牌面的脚本，本机也能跑：`pip install pillow && python3 tools/build_cards.py` |
-| `.github/workflows/cards.yml` | 上传图片后自动运行上面的脚本，并把网站同步到 `gh-pages` 分支 |
+| `.github/workflows/cards.yml` | main 有新提交时运行：图片有变化就先跑上面的脚本，然后把网站同步到 `gh-pages` 分支 |
 | `index.html`、`sw.js`、`mqtt.min.js` | 游戏本身、离线缓存、联机用的库 |
 
 联机消息和语音的连线信号通过公共 MQTT 服务器转发（broker.emqx.io，备用 broker.hivemq.com），语音本身是浏览器之间直接连线。拿到房间链接的人都能进入房间。部分手机网络之间可能无法直接连线，这时语音会显示「语音连不上」，游戏本身不受影响。
