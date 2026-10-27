@@ -3,9 +3,9 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>梦呓</title>
+<title>半梦半骗</title>
 <meta name="description" content="和朋友在线玩的说梦卡牌游戏。讲述者给一张梦境卡一句线索，大家出牌混淆，再猜哪张才是真的。开房间发链接，不用注册，还能开语音。">
-<meta property="og:title" content="梦呓">
+<meta property="og:title" content="半梦半骗">
 <meta property="og:description" content="说一句梦话，让大家猜是哪一张。">
 <meta name="theme-color" content="#10143a">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%231a1f55'/%3E%3Cpath d='M20.5 7.5a9.5 9.5 0 1 0 4 16.6A8 8 0 1 1 20.5 7.5z' fill='%23ffdd8e'/%3E%3C/svg%3E">
@@ -133,9 +133,9 @@ main { width: min(100%, 1040px); margin: 0 auto; padding: 16px max(16px, env(saf
 .link { border: 0; background: none; color: var(--gold-2); padding: 0; text-decoration: underline; text-underline-offset: 3px; font-size: 14px; }
 
 /* ---------- 首页 ---------- */
-.hero { position: relative; display: grid; gap: 18px; justify-items: center; text-align: center; padding: 6px 0 4px; }
+.hero { position: relative; display: grid; grid-template-columns: minmax(0, 1fr); gap: 18px; justify-items: center; text-align: center; padding: 6px 0 4px; }
 .moon {
-  position: absolute; top: -4px; left: calc(50% + 64px); width: 104px; height: 104px; border-radius: 50%;
+  position: absolute; top: -4px; left: min(calc(50% + 64px), calc(100% - 104px)); width: 104px; height: 104px; border-radius: 50%;
   box-shadow: inset -26px 12px 0 0 var(--gold-2); transform: rotate(-12deg);
   filter: drop-shadow(0 0 22px rgba(255, 221, 142, .55)); pointer-events: none;
 }
@@ -145,11 +145,11 @@ main { width: min(100%, 1040px); margin: 0 auto; padding: 16px max(16px, env(saf
 .fan .card:nth-child(2) { transform: translateX(-50%) translateY(-6px); z-index: 2; }
 .fan .card:nth-child(3) { transform: translateX(-50%) rotate(13deg) translateX(66px) translateY(10px); }
 .hero h1 {
-  margin: 4px 0 0; font: 400 clamp(60px, 17vw, 92px)/1 var(--f-title); letter-spacing: .22em; text-indent: .22em; color: var(--paper);
+  margin: 4px 0 0; font: 400 clamp(48px, 14vw, 84px)/1 var(--f-title); letter-spacing: .14em; text-indent: .14em; white-space: nowrap; color: var(--paper);
   text-shadow: 0 0 28px rgba(255, 221, 142, .35), 0 2px 0 rgba(16, 19, 74, .9);
 }
 .hero .lede { margin: -4px 0 6px; color: var(--ink-2); font: 400 19px/1.5 var(--f-title); letter-spacing: .08em; text-wrap: balance; }
-.entry { display: grid; gap: 12px; width: min(100%, 420px); }
+.entry { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; width: min(100%, 420px); }
 .joinrow { display: flex; gap: 10px; }
 .joinrow input {
   flex: 1; min-width: 0; min-height: 48px; padding: 0 16px; border-radius: 14px; border: 1px solid var(--line-2); background: rgba(9, 11, 40, .45);
@@ -489,7 +489,7 @@ details.sec[open] > summary::before { transform: rotate(90deg); }
 <body>
 <div class="app" id="app">
   <header class="bar" id="bar">
-    <button class="brand" type="button" data-act="home" aria-label="回到首页"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15.5 4.2a8.4 8.4 0 1 0 3.9 14.6A7 7 0 1 1 15.5 4.2z" fill="#ffdd8e"/></svg><b>梦呓</b></button>
+    <button class="brand" type="button" data-act="home" aria-label="回到首页"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15.5 4.2a8.4 8.4 0 1 0 3.9 14.6A7 7 0 1 1 15.5 4.2z" fill="#ffdd8e"/></svg><b>半梦半骗</b></button>
     <div class="bar-mid" id="barMid"></div>
     <div class="bar-tools" id="barTools"></div>
   </header>
@@ -524,7 +524,7 @@ details.sec[open] > summary::before { transform: rotate(90deg); }
 <script src="mqtt.min.js"></script>
 <script>
 /* ---- cards.js ---- */
-/* 梦呓 · 卡面生成器
+/* 半梦半骗 · 卡面生成器
  * 每张卡由编号（0 到 BOX-1）决定：plan() 只用随机数决定画面内容与文字描述，不碰画布，可在 Node 里跑；
  * draw() 按 plan 把画面画到 canvas 上。emoji 一律当剪影或发光体使用，所以各系统字体的差异只影响轮廓细节。
  */
@@ -2267,7 +2267,7 @@ const DreamCards = (() => {
 if (typeof module !== 'undefined') module.exports = DreamCards;
 
 /* ---- engine.js ---- */
-/* 梦呓 · 规则引擎（纯函数）
+/* 半梦半骗 · 规则引擎（纯函数）
  * apply(state, pid, act) → { ok, s, err }。主持人的页面用它处理所有人的操作，再把新状态发给大家；本机模式也用它。
  */
 const DreamEngine = (() => {
@@ -2660,7 +2660,7 @@ const DreamEngine = (() => {
 if (typeof module !== 'undefined') module.exports = DreamEngine;
 
 /* ---- bots.js ---- */
-/* 梦呓 · 电脑玩家
+/* 半梦半骗 · 电脑玩家
  * 电脑玩家看得懂每张卡的「标签」（卡面生成器知道画了什么），用标签和线索里的字词做匹配。
  */
 const DreamBots = (() => {
@@ -2751,7 +2751,7 @@ const DreamBots = (() => {
 if (typeof module !== 'undefined') module.exports = DreamBots;
 
 /* ---- app.js ---- */
-/* 梦呓 · 页面、联机、语音 */
+/* 半梦半骗 · 页面、联机、语音 */
 (() => {
   'use strict';
   const C = DreamCards, E = DreamEngine, BOT = DreamBots;
@@ -3070,7 +3070,7 @@ if (typeof module !== 'undefined') module.exports = DreamBots;
     vcTools();
     warmCards(s);
     const need = s && meId() ? E.need(s, meId()) : '';
-    document.title = need && need !== 'ready' ? '（轮到你）梦呓' : '梦呓';
+    document.title = need && need !== 'ready' ? '（轮到你）半梦半骗' : '半梦半骗';
   }
   function renderBar() {
     let mid = '';
@@ -3094,7 +3094,7 @@ if (typeof module !== 'undefined') module.exports = DreamBots;
       <div class="hero">
         <div class="moon" aria-hidden="true"></div>
         <div class="fan">${fan}</div>
-        <h1>梦呓</h1>
+        <h1>半梦半骗</h1>
         <p class="lede">说一句梦话，让大家猜是哪一张。</p>
         <div class="entry">
           <button class="btn gold wide" type="button" data-act="createRoom">开一个房间</button>
@@ -4077,7 +4077,7 @@ if (typeof module !== 'undefined') module.exports = DreamBots;
         return;
       }
       case 'shareLink':
-        if (navigator.share) navigator.share({ title: '梦呓', text: '来和我一起玩「梦呓」，打开链接就能入座：', url: inviteLink() }).catch(() => {});
+        if (navigator.share) navigator.share({ title: '半梦半骗', text: '来和我一起玩「半梦半骗」，打开链接就能入座：', url: inviteLink() }).catch(() => {});
         return;
       case 'toggleSfx': A.prefs.sfx = !A.prefs.sfx; savePrefs(); if (A.prefs.sfx) AU.play('pick'); renderAll(); return;
       case 'pref': {
